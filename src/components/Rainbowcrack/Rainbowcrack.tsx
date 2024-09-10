@@ -1,4 +1,4 @@
-import { Button, Stack, TextInput } from "@mantine/core";
+import { Button, Stack, TextInput, Select } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useCallback, useState, useEffect } from "react";
 import { CommandHelper } from "../../utils/CommandHelper";
@@ -9,152 +9,147 @@ import { LoadingOverlayAndCancelButton } from "../OverlayAndCancelButton/Overlay
 import { checkAllCommandsAvailability } from "../../utils/CommandAvailability";
 import InstallationModal from "../InstallationModal/InstallationModal";
 
-/**
- * Represents the form values for the RainbowCrack component.
- */
 interface FormValuesType {
-    hashValue: string;
+  hashValue: string;
+  operation: "crack" | "generate";
+  hashAlgorithm: string;
+  charset: string;
+  plaintextLength: string;
+  tableFile: string;
 }
 
-/**
- * The RainbowCrack component.
- * @returns The RainbowCrack component.
- */
 const RainbowCrack = () => {
-    // Component State Variables
-    const [loading, setLoading] = useState(false); // State variable to indicate loading state.
-    const [output, setOutput] = useState(""); // State variable to store the output of the command execution.
-    const [pid, setPid] = useState(""); // State variable to store the process ID of the command execution.
-    const [isCommandAvailable, setIsCommandAvailable] = useState(false); // State variable to check if the command is available.
-    const [opened, setOpened] = useState(!isCommandAvailable); // State variable that indicates if the modal is opened.
-    const [loadingModal, setLoadingModal] = useState(true); // State variable to indicate loading state of the modal.
-    const [allowSave, setAllowSave] = useState(false); // State variable to enable/disable saving
-    const [hasSaved, setHasSaved] = useState(false); // State variable to track whether output has been saved
+  const [loading, setLoading] = useState(false);
+  const [output, setOutput] = useState("");
+  const [pid, setPid] = useState("");
+  const [isCommandAvailable, setIsCommandAvailable] = useState(false);
+  const [opened, setOpened] = useState(!isCommandAvailable);
+  const [loadingModal, setLoadingModal] = useState(true);
+  const [allowSave, setAllowSave] = useState(false);
+  const [hasSaved, setHasSaved] = useState(false);
 
-    // Component Constants
-    const title = "RainbowCrack"; // Title of the component.
-    const description =
-        "RainbowCrack is a computer program which utilises rainbow tables to be used in password cracking."; // Description of the component.
-    const steps =
-        "How to use RainbowCrack \n" +
-        "Step 1: Enter a hash value. (E.g. 5d41402abc4b2a76b9719d911017c592) \n" +
-        "Step 2: Simply tap on the crack button to crack the hash key. \n" +
-        "The user can even save the output to a file by assigning a file-name under 'save output to file' option."; // Steps to use the component.
-    const sourceLink = ""; // Link to the source code (or RainbowCrack documentation).
-    const tutorial = ""; // Link to the official documentation/tutorial.
-    const dependencies = ["rcrack"]; // Dependencies required by the component.
+  const title = "RainbowCrack";
+  const description =
+    "RainbowCrack is a computer program which utilises rainbow tables to be used in password cracking.";
+  const steps =
+    "How to use RainbowCrack \n" +
+    "Step 1: Enter a hash value. (E.g. 5d41402abc4b2a76b9719d911017c592) \n" +
+    "Step 2: Simply tap on the crack button to crack the hash key. \n" +
+    "Step 3: To generate tables, select 'Generate Table' and provide the necessary parameters.";
+  const dependencies = ["rcrack", "rtgen"];
 
-    // Form hook to handle form input.
-    const form = useForm({
-        initialValues: {
-            hashValue: "",
-        },
-    });
+  const form = useForm({
+    initialValues: {
+      hashValue: "",
+      operation: "crack",
+      hashAlgorithm: "md5",
+      charset: "numeric",
+      plaintextLength: "1-7",
+      tableFile: "table.rt",
+    },
+  });
 
-    // Check if the command is available and set state variables accordingly.
-    useEffect(() => {
-        checkAllCommandsAvailability(dependencies)
-            .then((isAvailable) => {
-                setIsCommandAvailable(isAvailable);
-                setOpened(!isAvailable);
-                setLoadingModal(false);
-            })
-            .catch((error) => {
-                console.error("An error occurred:", error);
-                setLoadingModal(false);
-            });
-    }, []);
+  useEffect(() => {
+    checkAllCommandsAvailability(dependencies)
+      .then((isAvailable) => {
+        setIsCommandAvailable(isAvailable);
+        setOpened(!isAvailable);
+        setLoadingModal(false);
+      })
+      .catch((error) => {
+        console.error("An error occurred:", error);
+        setLoadingModal(false);
+      });
+  }, []);
 
-    /**
-     * handleProcessData: Callback to handle and append new data from the child process to the output.
-     * @param {string} data - The data received from the child process.
-     */
-    const handleProcessData = useCallback((data: string) => {
-        setOutput((prevOutput) => prevOutput + "\n" + data); // Append new data to the previous output.
-    }, []);
+  const handleProcessData = useCallback((data: string) => {
+    setOutput((prevOutput) => prevOutput + "\n" + data);
+  }, []);
 
-    /**
-     * handleProcessTermination: Callback to handle the termination of the child process.
-     * @param {object} param - An object containing information about the process termination.
-     * @param {number} param.code - The exit code of the terminated process.
-     * @param {number} param.signal - The signal code indicating how the process was terminated.
-     */
-    const handleProcessTermination = useCallback(
-        ({ code, signal }: { code: number; signal: number }) => {
-            if (code === 0) {
-                handleProcessData("\nProcess completed successfully.");
-            } else if (signal === 15) {
-                handleProcessData("\nProcess was manually terminated.");
-            } else {
-                handleProcessData(`\nProcess terminated with exit code: ${code} and signal code: ${signal}`);
-            }
-            setPid("");
-            setLoading(false);
-        },
-        [handleProcessData]
-    );
+  const handleProcessTermination = useCallback(
+    ({ code, signal }: { code: number; signal: number }) => {
+      if (code === 0) {
+        handleProcessData("\nProcess completed successfully.");
+      } else if (signal === 15) {
+        handleProcessData("\nProcess was manually terminated.");
+      } else {
+        handleProcessData(`\nProcess terminated with exit code: ${code} and signal code: ${signal}`);
+      }
+      setPid("");
+      setLoading(false);
+    },
+    [handleProcessData]
+  );
 
-    /**
-     * onSubmit: Asynchronous handler for the form submission event.
-     * @param {FormValuesType} values - The form values.
-     */
-    const onSubmit = async (values: FormValuesType) => {
-        setLoading(true);
+  const onSubmit = async (values: FormValuesType) => {
+    setLoading(true);
 
-        // Construct arguments for rainbowcrack command based on form input
-        const args = [values.hashValue];
+    let command = "rcrack";
+    let args = [values.hashValue];
 
-        // Execute the rainbowcrack command via helper method
-        CommandHelper.runCommandGetPidAndOutput("rcrack", args, handleProcessData, handleProcessTermination)
-            .then(({ output, pid }) => {
-                setOutput(output);
-                console.log(pid);
-                setPid(pid);
-            })
-            .catch((error) => {
-                setOutput(error.message);
-                setLoading(false);
-            });
-    };
+    if (values.operation === "generate") {
+      command = "rtgen";
+      args = [values.hashAlgorithm, values.charset, values.plaintextLength, values.tableFile];
+    }
 
-    /**
-     * Clears the output state.
-     */
-    const clearOutput = useCallback(() => {
-        setOutput("");
-    }, [setOutput]);
+    CommandHelper.runCommandGetPidAndOutput(command, args, handleProcessData, handleProcessTermination)
+      .then(({ output, pid }) => {
+        setOutput(output);
+        setPid(pid);
+      })
+      .catch((error) => {
+        setOutput(error.message);
+        setLoading(false);
+      });
+  };
 
-    const handleSaveComplete = () => {
-        // This function could handle any actions needed after saving the output
-        setHasSaved(true);
-    };
-    return (
-        <RenderComponent
-            title={title}
-            description={description}
-            steps={steps}
-            tutorial={tutorial}
-            sourceLink={sourceLink}
-        >
-            {!loadingModal && (
-                <InstallationModal
-                    isOpen={opened}
-                    setOpened={setOpened}
-                    feature_description={description}
-                    dependencies={dependencies}
-                />
-            )}
-            <form onSubmit={form.onSubmit(onSubmit)}>
-                <Stack>
-                    {LoadingOverlayAndCancelButton(loading, pid)}
-                    <TextInput label="Hash Value" required {...form.getInputProps("hashValue")} />
-                    {SaveOutputToTextFile_v2(output, allowSave, hasSaved, handleSaveComplete)}
-                    <Button type="submit">Crack</Button>
-                    <ConsoleWrapper output={output} clearOutputCallback={clearOutput} />
-                </Stack>
-            </form>
-        </RenderComponent>
-    );
+  const clearOutput = useCallback(() => {
+    setOutput("");
+  }, [setOutput]);
+
+  const handleSaveComplete = () => {
+    setHasSaved(true);
+  };
+
+  return (
+    <RenderComponent title={title} description={description} steps={steps}>
+      {!loadingModal && (
+        <InstallationModal
+          isOpen={opened}
+          setOpened={setOpened}
+          feature_description={description}
+          dependencies={dependencies}
+        />
+      )}
+      <form onSubmit={form.onSubmit(onSubmit)}>
+        <Stack>
+          {LoadingOverlayAndCancelButton(loading, pid)}
+          <Select
+            label="Operation"
+            required
+            data={[
+              { value: "crack", label: "Crack Hash" },
+              { value: "generate", label: "Generate Table" },
+            ]}
+            {...form.getInputProps("operation")}
+          />
+          {form.values.operation === "crack" ? (
+            <TextInput label="Hash Value" required {...form.getInputProps("hashValue")} />
+          ) : (
+            <>
+              <TextInput label="Hash Algorithm" required {...form.getInputProps("hashAlgorithm")} />
+              <TextInput label="Charset" required {...form.getInputProps("charset")} />
+              <TextInput label="Plaintext Length (e.g. 1-7)" required {...form.getInputProps("plaintextLength")} />
+              <TextInput label="Table File" required {...form.getInputProps("tableFile")} />
+            </>
+          )}
+          {SaveOutputToTextFile_v2(output, allowSave, hasSaved, handleSaveComplete)}
+          <Button type="submit">Execute</Button>
+          <ConsoleWrapper output={output} clearOutputCallback={clearOutput} />
+        </Stack>
+      </form>
+    </RenderComponent>
+  );
 };
 
 export default RainbowCrack;

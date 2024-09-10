@@ -10,6 +10,7 @@ import FindOffset from "./FindOffset/FindOffset";
 import Hashcat from "./Hashcat/Hashcat";
 import JohnTheRipper from "./JohnTheRipper/JohnTheRipper";
 import NmapTool from "./NmapTool/NmapTool";
+import SlowHttpTest from "./SlowHttpTest/SlowHttpTest";
 import { ShodanAPITool } from "./Shodan/Shodan-API-Tool";
 import SMBEnumeration from "./SMBEnumeration/SMBEnumeration";
 import SnmpCheck from "./SnmpCheck/SnmpCheck";
@@ -607,6 +608,14 @@ export const ROUTES: RouteProperties[] = [
             "Shodan API allows for network scanning and querying of Shodan’s database to gather information about connected devices and their vulnerabilities.",
         category: "Vulnerability Assessment and Exploitation",
     },
+    {
+    name: "Slow HTTP Test",
+    path: "/tools/slowhttptest",
+    element: <SlowHttpTest />,
+    description: "A tool to test for various slow HTTP DoS attacks, such as slow headers, slow body, and slow read.",
+    category: "Denial of Service Testing",
+    },
+
     {
         name: "SMB Enumeration",
         path: "/tools/SMBEnumeration",

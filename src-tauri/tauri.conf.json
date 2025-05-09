@@ -258,13 +258,13 @@
                         "args": true
                     },
                     {
-                        "name": "snmp-check",
-                        "cmd": "snmp-check",
+                        "name": "slowhttptest",
+                        "cmd": "slowhttptest",
                         "args": true
                     },
                     {
-                        "name": "sqlmap",
-                        "cmd": "sqlmap",
+                        "name": "snmp-check",
+                        "cmd": "snmp-check",
                         "args": true
                     },
                     {
@@ -298,8 +298,8 @@
                         "args": true
                     },
                     {
-                        "name": "wpscan",
-                        "cmd": "wpscan",
+                        "name": "WPScan",
+                        "cmd": "WPScan",
                         "args": true
                     },
                     {
